@@ -175,19 +175,14 @@ def print_text_info(text_info):
     print("Coreferences:")
     for coref in text_info['Coreferences']:
         print(f" - {coref[0]}: {', '.join(coref[1])}")
-# Ví dụ sử dụng
 
 text = "Billy was born in 2000. He is very handsome. He lives in Japan. "
-question = "When was Billy born ?"
+question = "Where was Billy born ?"
 def response(question,text):
-    question_info = analyze_question(question)
-    print_question_analysis(question_info)
-    text_infor = process_text(text)
-    print_text_info(text_infor)
-    map.answer_question(question, text)
+    # question_info = analyze_question(question)
+    # print_question_analysis(question_info)
+    # text_infor = process_text(text)
+    # print_text_info(text_infor)
+    return map.response(question, text)
 
-#
-# print("Bert:")
-# response(question,text)
-# print("Minh:")
-# find_answer(question,text)
+# print("Answer: ", response(question,text))

@@ -1,16 +1,18 @@
 import speech_recognition as sr
 import pyttsx3
-import pandas as pd
-from transformers import pipeline
-import main as friday
+import brain as friday
+import csv
 
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
-
-# Initialize the question-answering pipeline
-qa_pipeline = pipeline("question-answering", model="distilbert/distilbert-base-cased-distilled-squad")
-
-
+# Set the voice to female
+# List all available voices
+voices = engine.getProperty('voices')
+for voice in voices:
+    if "Zira" in voice.name:
+        engine.setProperty('voice', voice.id)
+        print(f"Selected female voice: {voice.name}")
+        break
 def speak(text):
     engine.say(text)
     engine.runAndWait()
@@ -31,39 +33,45 @@ def listen():
         except sr.RequestError:
             print("Sorry, there was an error with the speech recognition service.")
             return ""
+def load_data(data_file,contexts):
+    print("Data loading...")
+    with open(data_file, mode='r') as file:
+        # Create a CSV reader object
+        csv_reader = csv.reader(file)
+        header = next(csv_reader)  # Read the header row
+        header = header[0].split(',')  # Split the header by commas
 
+        # Get the index of the 'context' column
+        context_index = header.index('context')
 
-def answer_question(question, context):
-    result = qa_pipeline(question=question, context=context)
-    return result['answer']
+        # Loop through the remaining rows and collect context data
+        for row in csv_reader:
+            row = row[0].split(',')  # Split the row by commas
+            contexts.append(row[context_index])  # Append the context to the list
 
+    # Concatenate all contexts into a single string
+    all_contexts = ' '.join(contexts)
 
+    return all_contexts
 def main():
-    # Load the CSV file containing context, questions, answers
-    # data = pd.read_csv('question_answer_data.csv')
+    # Đọc file CSV và đảm bảo pandas đọc đúng header
+    data_file = 'question_answer_data.csv'
+    contexts = []
+    context = load_data(data_file,contexts)
+    print(f"Context (all joined): {context}")
 
-    # Loop through the CSV and use the context for answering
-    # contexts = data['context'].tolist()
-
-    speak("Hello, I am Friday. How can I assist you today?")
-
-    context_index = 0  # To track which context we are using
     while True:
         query = listen()
         if query:
             if 'stop' in query.lower():
-                speak("Goodbye!")
+                speak("Goodbye boss!")
                 break
-            # elif 'start' in query.lower():
-            #     context = contexts[context_index % len(contexts)]  # Get current context
-            #     friday.response(query.lower(), context)  # Pass context to friday.response()
-            #     context_index += 1  # Move to the next context in the next loop
+            elif 'hello' in query.lower():
+                speak("Hello boss, I am Friday. How can I assist you today?")
             else:
-                # Use the current context to answer the question
-                # context = contexts[context_index % len(contexts)]
-                # answer = answer_question(query, context)
-                speak(f"The answer is")
-
+                # Xử lý câu hỏi thông thường
+                answer = friday.response(query, context)  # Gọi hàm response
+                speak(answer)  # Nói câu trả lời
 
 if __name__ == "__main__":
     main()
